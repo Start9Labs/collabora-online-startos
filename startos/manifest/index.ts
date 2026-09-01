@@ -10,7 +10,7 @@ export const manifest = setupManifest({
   marketingUrl: 'https://www.collaboraonline.com',
   donationUrl: null,
   description: { short, long },
-  volumes: ['startos'],
+  volumes: [],
   images: {
     collabora: {
       source: { dockerTag: 'collabora/code:26.04.3.2.1' },
