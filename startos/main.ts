@@ -1,8 +1,6 @@
-import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
-  adminUsername,
   coolHostId,
   coolPort,
   nextcloudHostId,
@@ -12,10 +10,6 @@ import {
 
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info('Starting Collabora Online')
-
-  const adminPassword = await storeJson
-    .read((s) => s.adminPassword)
-    .const(effects)
 
   // Both bindings use `protocol: 'http'`, which publishes a plaintext and a
   // TLS address, so each read has to say which one it wants.
@@ -43,17 +37,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
     extra_params: [
       '--o:ssl.enable=false',
       '--o:ssl.termination=true',
-      // An enabled console with no password set is an open console.
-      ...(adminPassword ? [] : ['--o:admin_console.enable=false']),
+      // Upstream ships the admin console on with no credentials configured.
+      // Nothing here serves it, so it stays off rather than open.
+      '--o:admin_console.enable=false',
     ].join(' '),
   }
   // `server_name` is deliberately left unset. Nextcloud rewrites the absolute
   // URLs out of the discovery document, so what coolwsd derives per request is
   // discarded — and setting it would pin the editor to one address.
-  if (adminPassword) {
-    env.username = adminUsername
-    env.password = adminPassword
-  }
   if (nextcloudAddress) env.aliasgroup1 = `http://${nextcloudAddress}`
 
   return sdk.Daemons.of(effects).addDaemon('cool', {
@@ -80,6 +71,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
               result: 'starting' as const,
               message: i18n('Not ready to edit documents'),
             }),
+      // coolwsd preloads fonts, icons, dictionaries and the break iterator and
+      // forks its first kit before it binds the port — 10-20s on this hardware,
+      // longer on a cold cache. Without this the check reports a hard failure
+      // on every ordinary start.
+      gracePeriod: 120_000,
     },
     requires: [],
   })

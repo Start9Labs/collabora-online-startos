@@ -49,25 +49,11 @@ Configuration reaches `coolwsd` through environment variables, which its `--use-
 
 ## Volume and Data Layout
 
-Collabora holds no state of its own. It renders documents that live in Nextcloud and keeps nothing between restarts, so the package mounts nothing into the container.
-
-| Volume | Mount point | Contents |
-| --- | --- | --- |
-| `startos` | not mounted | `store.json` — read and written by the package, never by the container |
-
-There is no database, no cache to preserve, and no upstream data directory. A document being edited lives in the container's ephemeral filesystem only for as long as the editing session; the authoritative copy is always Nextcloud's.
+None. Collabora renders documents that live in Nextcloud and keeps nothing between restarts, so the package declares no volumes and mounts nothing into the container.
 
 ## File Models
 
-The package owns one file, and it holds StartOS-side state rather than upstream configuration. Collabora itself has no configuration file on disk that this package writes — every setting is passed as an environment variable at daemon start.
-
-| Model | File | How it is seeded | What rewrites it |
-| --- | --- | --- | --- |
-| `storeJson` | `store.json` on the `startos` volume | Empty at install | **Set Admin Password**, which is its only writer |
-
-`store.json` carries `adminPassword` and nothing else. It is read at daemon start and turned into the `username`/`password` environment variables, so setting it restarts the container. Nothing else re-asserts it, and there is no hand-editable configuration for a user to lose.
-
-`server_name` is deliberately never set. Left unset, `coolwsd` derives the host for its discovery document from each request — and Nextcloud strips those hosts out anyway, so pinning one would only limit which address the editor works on.
+None. Every setting reaches `coolwsd` as an environment variable, derived at daemon start; nothing is written to disk.
 
 ## Dependencies
 
@@ -81,7 +67,7 @@ The package exports no interfaces. Port 9980 is bound so that other containers c
 
 | Binding | Port | Exported | Purpose |
 | --- | --- | --- | --- |
-| `main` | 9980 | No — bridge only | WOPI discovery, the editor itself, and the admin console |
+| `main` | 9980 | No — bridge only | WOPI discovery and the editor itself |
 
 Everything a browser loads from Collabora arrives through Nextcloud, which proxies four path prefixes — `/browser`, `/cool`, `/coolws` and `/hosting` — from its own origin to this port. That is why Collabora needs no address, no certificate and no domain of its own, and why nothing on the LAN can reach it directly.
 
@@ -91,25 +77,15 @@ Collabora fetches and saves documents over the host bridge, so Nextcloud has to 
 
 There is nothing to configure. Collabora starts as soon as it is installed and needs no address, no certificate and no pairing step of its own.
 
-A single non-blocking task asks for an admin-console password. The console stays switched off until one is set, which is deliberate — an enabled console with no password configured is an open one. Editing works regardless.
-
-The Nextcloud Office app itself is not installed by this package. The user installs it from Nextcloud's own app store, and Nextcloud's Office Suite action wires the two together.
+The Nextcloud Office (Collabora) app is installed by the **Nextcloud** package when a user selects this service as their office suite, and Nextcloud points itself at this one. Nothing on this side participates.
 
 ## Actions
 
-One action, which writes a single key to `store.json` and restarts the container. It does not touch document data and is safe to repeat.
-
-**Set Admin Password** — run it to reach the admin console for the first time, to rotate the password, or to get back in after losing it. It generates a new password, stores it, and returns it once along with the path the console is served at. It changes `adminPassword` in `store.json` and enables the console if it was off. Costs a restart of the editor, so anyone with a document open loses the session, though not their saved work. Repeating it replaces the password rather than failing, so a second run invalidates the first.
+None. Nothing about this service is configurable: it takes no credentials, has no address of its own, and derives everything it needs at runtime.
 
 ## Tasks
 
-The package raises one task, cleared by running the action it points at, and able to return if the stored password is cleared.
-
-| Task | Severity | What raises it | What clears it |
-| --- | --- | --- | --- |
-| Set Admin Password | `important` | `adminPassword` unset in `store.json` | Running **Set Admin Password** |
-
-Nothing here is `critical`, so the service's ordinary Start/Stop controls are always available.
+None. The service is never held on a prompt, and its ordinary controls are always available.
 
 ## Health Checks
 
@@ -117,20 +93,18 @@ One check, on the daemon itself.
 
 **Editor** (daemon `cool`) — fetches `/hosting/capabilities` over the container bridge. It proves `coolwsd` is serving WOPI discovery, not merely that something is listening on the port, which is the distinction that matters: a `coolwsd` that started but cannot fork its document children will accept a connection and fail every document.
 
-A failure that clears within a minute or two of a start is ordinary — the process forks several children before it serves. A failure that persists points at the container being unable to fork (a kernel or seccomp problem, visible in the service logs) or at memory pressure. A red check here always means documents will not open; it is never cosmetic.
+It carries a two-minute grace period, so an ordinary start reads as *starting* rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
+
+A failure that survives the grace period points at the container being unable to fork (a kernel or seccomp problem, visible in the service logs) or at memory pressure. A red check here always means documents will not open; it is never cosmetic.
 
 ## Backups and Restore
 
-The `startos` volume is copied wholesale (`ofVolumes`). Nothing is dumped, because there is no database.
-
-What is captured is `store.json` — the admin-console password, which is the only state this package holds. What is deliberately excluded is everything else, because there is nothing else: documents belong to Nextcloud and are captured by Nextcloud's backup, not this one.
-
-A restored instance is immediately usable and needs nothing re-entered, on any server, at any address.
+Nothing is backed up, because nothing is stored. `createBackup` is declared over an empty volume set. Documents belong to Nextcloud and are captured by Nextcloud's backup; a restored server needs nothing re-entered here.
 
 ## Limitations and Differences
 
-1. **No address of its own.** Collabora is not reachable except through Nextcloud. The admin console is served at Nextcloud's address, and there is no way to reach the editor while Nextcloud is stopped.
-2. **The admin console is off until a password is set.** Upstream ships the console enabled with empty credentials; this package disables it rather than exposing it unauthenticated.
+1. **No address of its own, and nothing to configure.** Collabora is reachable only through Nextcloud, and there is no way to reach the editor while Nextcloud is stopped. The package has no actions, no tasks and no settings; everything it needs is derived at daemon start.
+2. **The admin console is disabled.** Upstream ships it enabled with no credentials configured. Nothing here serves it and no credential is stored, so it is switched off rather than left open — which also means there is no view of open documents or memory use.
 3. **The image has no shell.** Diagnostics that would normally run a command inside the container are not available.
 4. **Development Edition.** CODE is the freely redistributable edition. Collabora's supported enterprise builds, and the support contract that comes with them, are not what this package ships.
 5. **Memory scales with concurrent documents.** Roughly 50–100 MB per open document on top of the base process. `coolwsd` reads the container's cgroup limit and starts shedding idle documents as it approaches it, so a small server degrades by closing idle sessions rather than by failing.
@@ -144,22 +118,16 @@ package_id: collabora-online
 image: collabora/code
 architectures: [x86_64, aarch64]
 subcontainers: [cool]
-volumes:
-  startos: not mounted
-file_models:
-  - store.json
+volumes: {}
+file_models: []
 startos_managed_env_vars:
-  - username
-  - password
   - aliasgroup1
   - extra_params
   - DONT_GEN_SSL_CERT
 dependencies: none
 interfaces: {}
-actions:
-  - set-admin-password
-tasks:
-  - { action: set-admin-password, severity: important }
+actions: []
+tasks: []
 health_checks:
   - cool # the daemon id, which is what the check is named
 ```
