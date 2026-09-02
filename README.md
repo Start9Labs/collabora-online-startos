@@ -69,7 +69,7 @@ The package exports no interfaces. Port 9980 is bound so that other containers c
 | --- | --- | --- | --- |
 | `main` | 9980 | No — bridge only | WOPI discovery and the editor itself |
 
-Everything a browser loads from Collabora arrives through Nextcloud, which proxies four path prefixes — `/browser`, `/cool`, `/coolws` and `/hosting` — from its own origin to this port. That is why Collabora needs no address, no certificate and no domain of its own, and why nothing on the LAN can reach it directly.
+Everything a browser loads from Collabora arrives through Nextcloud, which proxies `/browser`, `/cool` and the two `/hosting` endpoints — `/hosting/discovery` and `/hosting/capabilities` — from its own origin to this port. `/cool` carries the websockets as well as the editor's HTTP traffic. That is why Collabora needs no address, no certificate and no domain of its own, and why nothing on the LAN can reach it directly.
 
 ## Installation and First-Run Flow
 
