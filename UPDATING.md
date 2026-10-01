@@ -7,8 +7,8 @@ Collabora publishes the CODE image to Docker Hub as [`collabora/code`](https://h
 New tags land roughly weekly, so the newest tag is usually a bugfix on the current series rather than a new one. List them with:
 
 ```bash
-curl -s "https://hub.docker.com/v2/repositories/collabora/code/tags?page_size=25" \
-  | jq -r '.results[] | select(.name | test("^[0-9]")) | "\(.name)  \(.last_updated)"'
+curl -fsSL "https://hub.docker.com/v2/repositories/collabora/code/tags?page_size=100&ordering=last_updated" \
+  | jq -r '.results[] | select(.name | test("^[0-9]+(\\.[0-9]+)*$")) | "\(.name)  \(.last_updated)"'
 ```
 
 Confirm the tag ships both architectures before pinning it:
@@ -20,7 +20,7 @@ docker manifest inspect collabora/code:<tag> | jq -r '.manifests[].platform.arch
 ## Making the bump
 
 1. Set the new tag on `images.collabora.source.dockerTag` in `startos/manifest/index.ts`.
-2. Set `version` in `startos/versions/current.ts`. The package version tracks the upstream series as `YY.M.<micro>:<revision>` — a `26.04.3.x.y` image becomes `26.4.3:0`, and a packaging-only change bumps the revision after the colon.
+2. Set `version` in `startos/versions/current.ts` to the full tag with the month's leading zero dropped, then `:<revision>` — `26.04.4.2.1` becomes `26.4.4.2.1:0`. Reset the revision to `0` on an upstream bump; increment it for a packaging-only change.
 3. Write release notes describing what the user will notice, not what changed upstream in full. Collabora's own release notes cover the editor.
 
 ## What to watch for
