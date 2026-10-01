@@ -25,3 +25,4 @@ Then open any document in Nextcloud Files to check it works.
 You never open Collabora directly. In Nextcloud, click a document, spreadsheet or presentation and it opens in the editor. Create new ones from the **+** menu in Files.
 
 Only enable one office app in Nextcloud. If the ONLYOFFICE app is enabled alongside Nextcloud Office (Collabora), Word, Excel and PowerPoint files stop opening in either of them and download instead. Nextcloud's service page will tell you which app to disable.
+
