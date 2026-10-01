@@ -1,4 +1,5 @@
 import { setupManifest } from '@start9labs/start-sdk'
+import { upstreamTag } from '../upstream'
 import { long, short } from './i18n'
 
 export const manifest = setupManifest({
@@ -13,7 +14,7 @@ export const manifest = setupManifest({
   volumes: [],
   images: {
     collabora: {
-      source: { dockerTag: 'collabora/code:26.04.4.1.1' },
+      source: { dockerTag: `collabora/code:${upstreamTag}` },
       arch: ['x86_64', 'aarch64'],
     },
   },

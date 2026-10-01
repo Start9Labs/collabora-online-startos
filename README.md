@@ -36,11 +36,11 @@ This package runs the Collabora Online Development Edition (CODE) image and wire
 
 The package wraps the upstream `collabora/code` image unmodified and runs its default entrypoint, which is the `coolwsd` binary itself rather than a shell script.
 
-| | |
-| --- | --- |
-| Image source | Upstream `collabora/code`, unmodified |
-| Architectures | x86_64, aarch64 |
-| Entrypoint | Default (`coolwsd --use-env-vars …`) |
+|               |                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Image source  | Upstream `collabora/code`, unmodified                                                    |
+| Architectures | x86_64, aarch64                                                                          |
+| Entrypoint    | Default (`coolwsd --use-env-vars …`)                                                     |
 | Subcontainers | `cool` — the only container; runs `coolwsd` and the document-rendering children it forks |
 
 The image carries **no shell**: `/bin/sh` does not exist in it, and the only executables are `coolwsd`, its forkit helpers, and `openssl`. Anything that would ordinarily be a `sh -c` oneshot or a shell health check has to be expressed some other way, and `start-cli package attach` cannot open an interactive prompt in it.
@@ -65,11 +65,15 @@ The package still needs Nextcloud to be useful, and reads one thing from it at r
 
 The package exports no interfaces. Port 9980 is bound so that other containers can reach it across the internal bridge, but nothing is exported onto the LAN, a Tor address, or a domain.
 
-| Binding | Port | Exported | Purpose |
-| --- | --- | --- | --- |
-| `main` | 9980 | No — bridge only | WOPI discovery and the editor itself |
+| Binding | Port | Exported         | Purpose                              |
+| ------- | ---- | ---------------- | ------------------------------------ |
+| `main`  | 9980 | No — bridge only | WOPI discovery and the editor itself |
 
 Everything a browser loads from Collabora arrives through Nextcloud, which proxies `/browser`, `/cool` and the two `/hosting` endpoints — `/hosting/discovery` and `/hosting/capabilities` — from its own origin to this port. `/cool` carries the websockets as well as the editor's HTTP traffic. That is why Collabora needs no address, no certificate and no domain of its own, and why nothing on the LAN can reach it directly.
+
+## Package versions
+
+The package preserves Collabora's complete year/month/micro/build/patch version, followed by the StartOS wrapper revision. Month padding is normalized in ExVer and restored for the Docker tag. `startos/upstream.ts` owns the upstream version used by both the image pin and the package version. See [UPDATING.md](UPDATING.md) for the update procedure.
 
 ## Installation and First-Run Flow
 
@@ -93,7 +97,7 @@ One check, on the daemon itself.
 
 **Editor** (daemon `cool`) — fetches `/hosting/capabilities` over the container bridge. It proves `coolwsd` is serving WOPI discovery, not merely that something is listening on the port, which is the distinction that matters: a `coolwsd` that started but cannot fork its document children will accept a connection and fail every document.
 
-It carries a two-minute grace period, so an ordinary start reads as *starting* rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
+It carries a two-minute grace period, so an ordinary start reads as _starting_ rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
 
 A failure that survives the grace period points at the container being unable to fork (a kernel or seccomp problem, visible in the service logs) or at memory pressure. A red check here always means documents will not open; it is never cosmetic.
 

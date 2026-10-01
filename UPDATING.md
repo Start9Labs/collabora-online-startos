@@ -7,8 +7,8 @@ Collabora publishes the CODE image to Docker Hub as [`collabora/code`](https://h
 New tags land roughly weekly, so the newest tag is usually a bugfix on the current series rather than a new one. List them with:
 
 ```bash
-curl -s "https://hub.docker.com/v2/repositories/collabora/code/tags?page_size=25" \
-  | jq -r '.results[] | select(.name | test("^[0-9]")) | "\(.name)  \(.last_updated)"'
+curl -fsSL "https://hub.docker.com/v2/repositories/collabora/code/tags?page_size=100&ordering=last_updated" \
+  | jq -r '.results[] | select(.name | test("^[0-9]+(\\.[0-9]+)*$")) | "\(.name)  \(.last_updated)"'
 ```
 
 Confirm the tag ships both architectures before pinning it:
@@ -19,9 +19,10 @@ docker manifest inspect collabora/code:<tag> | jq -r '.manifests[].platform.arch
 
 ## Making the bump
 
-1. Set the new tag on `images.collabora.source.dockerTag` in `startos/manifest/index.ts`.
-2. Set `version` in `startos/versions/current.ts`. The package version tracks the upstream series as `YY.M.<micro>:<revision>` — a `26.04.3.x.y` image becomes `26.4.3:0`, and a packaging-only change bumps the revision after the colon.
-3. Write release notes describing what the user will notice, not what changed upstream in full. Collabora's own release notes cover the editor.
+1. Set `upstreamVersion` in `startos/upstream.ts` to the complete upstream version, including the build and patch components, without numeric padding: `26.04.4.2.1` becomes `26.4.4.2.1`. The manifest derives the Docker tag by padding the month; `current.ts` uses the same version directly.
+2. The package version is `${upstreamVersion}:<revision>`. Reset the revision to `0` for an upstream update; increment it for a packaging-only change.
+3. Read Collabora's release notes to determine the change's review scope. These year/month/build counters are not SemVer major/minor/patch positions. Summarize the user-relevant changes in every release-note locale.
+4. Update the target-release expectations in `tests/version.test.ts`, including the image spelling and next build/patch examples. Run `npm test`, `npm run check`, `npm run prettier`, `npm run build`, and `make`. The tests check image/version agreement, full component retention, and upgrade reachability from the older shortened versions.
 
 ## What to watch for
 

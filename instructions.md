@@ -12,6 +12,10 @@ Documents, spreadsheets and presentations you can open and edit in the browser, 
 
 Because the editor is served from your Nextcloud's own address, it works wherever Nextcloud works — on your local network, through a public domain, or over Tor — with nothing to switch between them.
 
+## Versions
+
+The version shown in StartOS includes Collabora's full upstream version before the colon and the package revision after it. Older packages omitted the build and patch components; updates to the full version need no extra setup.
+
 ## Getting set up
 
 Install Nextcloud first — Collabora does nothing without it.
@@ -25,4 +29,3 @@ Then open any document in Nextcloud Files to check it works.
 You never open Collabora directly. In Nextcloud, click a document, spreadsheet or presentation and it opens in the editor. Create new ones from the **+** menu in Files.
 
 Only enable one office app in Nextcloud. If the ONLYOFFICE app is enabled alongside Nextcloud Office (Collabora), Word, Excel and PowerPoint files stop opening in either of them and download instead. Nextcloud's service page will tell you which app to disable.
-

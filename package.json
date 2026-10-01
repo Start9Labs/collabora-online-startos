@@ -2,8 +2,9 @@
   "name": "collabora-online-startos",
   "scripts": {
     "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
-    "prettier": "prettier --write startos",
-    "check": "tsc --noEmit"
+    "prettier": "prettier --write startos tests",
+    "check": "tsc --noEmit",
+    "test": "ncc build tests/version.test.ts -o .test-build && node --test .test-build/index.js"
   },
   "dependencies": {
     "@start9labs/start-sdk": "2.0.9"
