@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { ExtendedVersion, Version, types } from '@start9labs/start-sdk'
 import { manifest } from '../startos/manifest'
@@ -10,6 +11,11 @@ const packageVersion = ExtendedVersion.parse(current.options.version)
 test('the package version preserves all five upstream components', () => {
   assert.equal(current.options.version, '26.4.4.2.1:0')
   assert.deepEqual(packageVersion.upstream.number, [26, 4, 4, 2, 1])
+})
+
+test('the current version has a quoted declaration for the release workflow', () => {
+  const source = readFileSync('startos/versions/current.ts', 'utf8')
+  assert.match(source, /version:\s*(['"])26\.4\.4\.2\.1:0\1/)
 })
 
 test('the image pin and package version identify the same upstream release', () => {
