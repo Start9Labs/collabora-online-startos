@@ -12,10 +12,6 @@ Documents, spreadsheets and presentations you can open and edit in the browser, 
 
 Because the editor is served from your Nextcloud's own address, it works wherever Nextcloud works — on your local network, through a public domain, or over Tor — with nothing to switch between them.
 
-## Versions
-
-The version shown in StartOS includes Collabora's full upstream version before the colon and the package revision after it. Older packages omitted the build and patch components; updates to the full version need no extra setup.
-
 ## Getting set up
 
 Install Nextcloud first — Collabora does nothing without it.

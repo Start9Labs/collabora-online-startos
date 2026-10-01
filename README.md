@@ -73,7 +73,7 @@ Everything a browser loads from Collabora arrives through Nextcloud, which proxi
 
 ## Package versions
 
-The package preserves Collabora's complete year/month/micro/build/patch version, followed by the StartOS wrapper revision. Month padding is normalized in ExVer and restored for the Docker tag. `startos/upstream.ts` owns the upstream version used by both the image pin and the package version. See [UPDATING.md](UPDATING.md) for the update procedure.
+The package preserves Collabora's complete year/month/micro/build/patch version, followed by the StartOS wrapper revision. Month padding is normalized in ExVer and restored for the Docker tag. `startos/versions/current.ts` owns the quoted package-version literal; `startos/upstream.ts` derives the padded Docker tag from its upstream portion. See [UPDATING.md](UPDATING.md) for the update procedure.
 
 ## Installation and First-Run Flow
 

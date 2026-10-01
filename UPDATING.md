@@ -19,8 +19,8 @@ docker manifest inspect collabora/code:<tag> | jq -r '.manifests[].platform.arch
 
 ## Making the bump
 
-1. Set `upstreamVersion` in `startos/upstream.ts` to the complete upstream version, including the build and patch components, without numeric padding: `26.04.4.2.1` becomes `26.4.4.2.1`. The manifest derives the Docker tag by padding the month; `current.ts` uses the same version directly.
-2. The package version is `${upstreamVersion}:<revision>`. Reset the revision to `0` for an upstream update; increment it for a packaging-only change.
+1. Set `metadata.version` in `startos/versions/current.ts` to the complete upstream version without numeric padding, followed by `:<revision>`: `26.04.4.2.1` becomes `26.4.4.2.1:0`. Keep the `version:` value a single- or double-quoted literal in this file; the shared release workflow extracts it before building. The SDK validates the same metadata, and `startos/upstream.ts` derives the Docker tag by padding the month.
+2. Reset the revision to `0` for an upstream update; increment it for a packaging-only change.
 3. Read Collabora's release notes to determine the change's review scope. These year/month/build counters are not SemVer major/minor/patch positions. Summarize the user-relevant changes in every release-note locale.
 4. Update the target-release expectations in `tests/version.test.ts`, including the image spelling and next build/patch examples. Run `npm test`, `npm run check`, `npm run prettier`, `npm run build`, and `make`. The tests check image/version agreement, full component retention, and upgrade reachability from the older shortened versions.
 
