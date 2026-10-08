@@ -27,7 +27,7 @@ docker manifest inspect collabora/code:<tag> | jq -r '.manifests[].platform.arch
 
 Collabora changes the hashed path segment in its editor URLs (`/browser/<hash>/cool.html`) on most releases. Nextcloud re-reads it from WOPI discovery, so this is normally invisible — but a Nextcloud that has cached discovery may serve the old path until its cache expires, which looks like documents failing to open right after an update.
 
-The environment variables this package sets — `username`, `password`, `aliasgroup1`, `extra_params`, `DONT_GEN_SSL_CERT` — are read by `coolwsd --use-env-vars`. That mapping has been stable, but it is upstream's and not covered by semver; if a bump breaks startup, check `coolwsd --help` in the new image before looking anywhere else.
+The environment variables this package sets — `aliasgroup1`, `extra_params`, `DONT_GEN_SSL_CERT` — are read by `coolwsd --use-env-vars`. That mapping has been stable, but it is upstream's and not covered by semver; if a bump breaks startup, check `coolwsd --help` in the new image before looking anywhere else.
 
 The Nextcloud package rewrites `urlsrc` out of the discovery response to make the editor
 load same-origin, which is what lets it work on every address Nextcloud is reachable at.

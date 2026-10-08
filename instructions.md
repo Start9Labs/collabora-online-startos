@@ -4,7 +4,7 @@ Collabora has no address of its own and no interface to open. Nextcloud serves t
 
 ## Documentation
 
-- [Nextcloud Office admin manual](https://docs.nextcloud.com/server/latest/admin_manual/office/*) — running and configuring Collabora Online behind Nextcloud.
+- [Nextcloud Office admin manual](https://docs.nextcloud.com/server/latest/admin_manual/office/index.html) — running and configuring Collabora Online behind Nextcloud.
 
 ## What you get on StartOS
 
