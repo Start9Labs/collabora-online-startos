@@ -91,11 +91,11 @@ None. The service is never held on a prompt, and its ordinary controls are alway
 
 One check, on the daemon itself.
 
-**Editor** (daemon `cool`) — fetches `/hosting/capabilities` over the container bridge. It proves `coolwsd` is serving WOPI discovery, not merely that something is listening on the port, which is the distinction that matters: a `coolwsd` that started but cannot fork its document children will accept a connection and fail every document.
+**Editor** (daemon `cool`) — fetches `/readyz` over the container bridge with a one-second timeout. Only HTTP 200 with body `ok` succeeds. Upstream checks that the forkit process is alive, a spare document-rendering process exists or is being spawned, shutdown is not underway, and disk, memory, connection and document limits allow another document.
 
 It carries a two-minute grace period, so an ordinary start reads as *starting* rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
 
-A failure that survives the grace period points at the container being unable to fork (a kernel or seccomp problem, visible in the service logs) or at memory pressure. A red check here always means documents will not open; it is never cosmetic.
+A failure that survives the grace period can indicate a forkit failure, lack of spare rendering processes, low disk space, memory pressure, or exhausted connection or document limits. Upstream logs the failed check and its reason; inspect the service logs. At capacity, existing documents may still work even though the service cannot accept another one. Closing idle documents can relieve capacity pressure.
 
 ## Backups and Restore
 

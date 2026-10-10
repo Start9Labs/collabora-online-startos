@@ -1,6 +1,6 @@
 # Updating Collabora Online
 
-## Where the version comes from
+## Determining the upstream version
 
 Collabora publishes the CODE image to Docker Hub as [`collabora/code`](https://hub.docker.com/r/collabora/code). Tags are `YY.MM.<micro>.<build>.<patch>` — the year and month of the release series, then Collabora's own counters. `latest` tracks the newest of these.
 
@@ -17,7 +17,11 @@ Confirm the tag ships both architectures before pinning it:
 docker manifest inspect collabora/code:<tag> | jq -r '.manifests[].platform.architecture'
 ```
 
-## Making the bump
+The release scheme is CalVer, not SemVer. Classify the impact from the [CODE release notes](https://www.collaboraonline.com/code-26-04-release-notes/), not from a changed counter. If the notes lag behind the image, take the guide's major-scope breaking-change pass and use the source comparison for release notes.
+
+The application source is mirrored at [CollaboraOnline/online.mirror](https://github.com/CollaboraOnline/online.mirror); `CollaboraOnline/online` is the issue tracker. Image `26.04.5.1.1` corresponds to source tag `cp-26.04.5-1`. Read `docker/from-packages/Dockerfile`, `coolwsd.xml.in`, and the relevant `wsd/` implementations at the target tag when checking runtime assumptions.
+
+## Applying the bump
 
 1. Set the new tag on `images.collabora.source.dockerTag` in `startos/manifest/index.ts`.
 2. Set `version` in `startos/versions/current.ts` to the full tag with the month's leading zero dropped, then `:<revision>` — `26.04.4.2.1` becomes `26.4.4.2.1:0`. Reset the revision to `0` on an upstream bump; increment it for a packaging-only change.
@@ -33,5 +37,7 @@ The Nextcloud package rewrites `urlsrc` out of the discovery response to make th
 load same-origin, which is what lets it work on every address Nextcloud is reachable at.
 That is a workaround for nextcloud/richdocuments#6019 — if upstream gains a way to serve a
 root-relative `urlsrc`, the `mod_substitute` rule in `nextcloud-startos` can go.
+
+The daemon's readiness check uses `/readyz`: HTTP 200 with body `ok` means the forkit and kit-spare checks pass and the server has capacity to accept documents. `/hosting/capabilities` advertises features but is not a readiness signal, and the SDK's `checkWebUrl` accepts any HTTP status.
 
 Discovery must keep being served as uncompressed `text/xml`. Nextcloud's Apache rewrites the absolute hosts out of it with `mod_substitute`, which cannot read a compressed body — if a release starts compressing `/hosting/discovery`, every document opens to a blank frame on any address but one.
