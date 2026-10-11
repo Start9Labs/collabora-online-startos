@@ -57,20 +57,34 @@ export const main = sdk.setupMain(async ({ effects }) => {
     exec: { command: sdk.useEntrypoint(), env },
     ready: {
       display: i18n('Editor'),
-      fn: () =>
-        ownAddress
-          ? sdk.healthCheck.checkWebUrl(
-              effects,
-              `http://${ownAddress}/hosting/capabilities`,
-              {
-                successMessage: i18n('Ready to edit documents'),
-                errorMessage: i18n('Not ready to edit documents'),
-              },
-            )
-          : Promise.resolve({
-              result: 'starting' as const,
-              message: i18n('Not ready to edit documents'),
-            }),
+      fn: async () => {
+        if (!ownAddress)
+          return {
+            result: 'starting' as const,
+            message: i18n('Not ready to edit documents'),
+          }
+
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 1000)
+        let ready = false
+        try {
+          const response = await fetch(`http://${ownAddress}/readyz`, {
+            signal: controller.signal,
+          })
+          ready = response.status === 200 && (await response.text()) === 'ok'
+        } catch {
+          ready = false
+        } finally {
+          clearTimeout(timeout)
+        }
+
+        return {
+          result: ready ? ('success' as const) : ('failure' as const),
+          message: ready
+            ? i18n('Ready to edit documents')
+            : i18n('Not ready to edit documents'),
+        }
+      },
       // coolwsd preloads fonts, icons, dictionaries and the break iterator and
       // forks its first kit before it binds the port — 10-20s on this hardware,
       // longer on a cold cache. Without this the check reports a hard failure
