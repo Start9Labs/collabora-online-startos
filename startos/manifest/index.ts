@@ -13,7 +13,7 @@ export const manifest = setupManifest({
   volumes: [],
   images: {
     collabora: {
-      source: { dockerTag: 'collabora/code:26.04.5.1.1' },
+      source: { dockerTag: 'collabora/code:26.04.5.2.1' },
       arch: ['x86_64', 'aarch64'],
     },
   },
