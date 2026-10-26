@@ -27,4 +27,3 @@ You never open Collabora directly. In Nextcloud, click a document, spreadsheet o
 The **Editor** health check reports whether Collabora can accept another document. If it fails after startup, check the service logs for the reason; closing documents you are no longer using can free capacity.
 
 Only enable one office app in Nextcloud. If the ONLYOFFICE app is enabled alongside Nextcloud Office (Collabora), Word, Excel and PowerPoint files stop opening in either of them and download instead. Nextcloud's service page will tell you which app to disable.
-
