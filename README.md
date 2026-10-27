@@ -36,11 +36,11 @@ This package runs the Collabora Online Development Edition (CODE) image and wire
 
 The package wraps the upstream `collabora/code` image unmodified and runs its default entrypoint, which is the `coolwsd` binary itself rather than a shell script.
 
-| | |
-| --- | --- |
-| Image source | Upstream `collabora/code`, unmodified |
-| Architectures | x86_64, aarch64 |
-| Entrypoint | Default (`coolwsd --use-env-vars …`) |
+|               |                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Image source  | Upstream `collabora/code`, unmodified                                                    |
+| Architectures | x86_64, aarch64                                                                          |
+| Entrypoint    | Default (`coolwsd --use-env-vars …`)                                                     |
 | Subcontainers | `cool` — the only container; runs `coolwsd` and the document-rendering children it forks |
 
 The image carries **no shell**: `/bin/sh` does not exist in it, and the only executables are `coolwsd`, its forkit helpers, and `openssl`. Anything that would ordinarily be a `sh -c` oneshot or a shell health check has to be expressed some other way, and `start-cli package attach` cannot open an interactive prompt in it.
@@ -65,9 +65,9 @@ The package still needs Nextcloud to be useful, and reads one thing from it at r
 
 The package exports no interfaces. Port 9980 is bound so that other containers can reach it across the internal bridge, but nothing is exported onto the LAN, a Tor address, or a domain.
 
-| Binding | Port | Exported | Purpose |
-| --- | --- | --- | --- |
-| `main` | 9980 | No — bridge only | WOPI discovery and the editor itself |
+| Binding | Port | Exported         | Purpose                              |
+| ------- | ---- | ---------------- | ------------------------------------ |
+| `main`  | 9980 | No — bridge only | WOPI discovery and the editor itself |
 
 Everything a browser loads from Collabora arrives through Nextcloud, which proxies `/browser`, `/cool` and the two `/hosting` endpoints — `/hosting/discovery` and `/hosting/capabilities` — from its own origin to this port. `/cool` carries the websockets as well as the editor's HTTP traffic. That is why Collabora needs no address, no certificate and no domain of its own, and why nothing on the LAN can reach it directly.
 
@@ -93,7 +93,7 @@ One check, on the daemon itself.
 
 **Editor** (daemon `cool`) — fetches `/readyz` over the container bridge with a one-second timeout. Only HTTP 200 with body `ok` succeeds. Upstream checks that the forkit process is alive, a spare document-rendering process exists or is being spawned, shutdown is not underway, and disk, memory, connection and document limits allow another document.
 
-It carries a two-minute grace period, so an ordinary start reads as *starting* rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
+It carries a two-minute grace period, so an ordinary start reads as _starting_ rather than failed: `coolwsd` preloads fonts, icons, dictionaries and the break iterator and forks its first kit before it binds the port, which takes 10-20 seconds on modest x86 hardware and longer on a cold cache.
 
 A failure that survives the grace period can indicate a forkit failure, lack of spare rendering processes, low disk space, memory pressure, or exhausted connection or document limits. Upstream logs the failed check and its reason; inspect the service logs. At capacity, existing documents may still work even though the service cannot accept another one. Closing idle documents can relieve capacity pressure.
 

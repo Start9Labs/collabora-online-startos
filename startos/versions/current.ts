@@ -1,18 +1,15 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '26.4.5.2.1:1',
+  version: '26.4.5.2.1:2',
   releaseNotes: {
-    en_US:
-      'Fixes Collabora Online failing to start after updating to 26.4.5.2.1:0.',
+    en_US: 'Updated the StartOS SDK to 3.1.1. No change in behavior.',
     es_ES:
-      'Corrige que Collabora Online no se iniciara tras actualizar a 26.4.5.2.1:0.',
-    de_DE:
-      'Behebt, dass Collabora Online nach dem Update auf 26.4.5.2.1:0 nicht startete.',
-    pl_PL:
-      'Naprawiono problem z uruchamianiem Collabora Online po aktualizacji do wersji 26.4.5.2.1:0.',
+      'Actualizado el SDK de StartOS a 3.1.1. Sin cambios de comportamiento.',
+    de_DE: 'StartOS-SDK auf 3.1.1 aktualisiert. Keine Verhaltensänderung.',
+    pl_PL: 'Zaktualizowano SDK StartOS do 3.1.1. Bez zmian w działaniu.',
     fr_FR:
-      'Corrige l’échec du démarrage de Collabora Online après la mise à jour vers 26.4.5.2.1:0.',
+      'Mise à jour du SDK StartOS vers 3.1.1. Aucun changement de comportement.',
   },
   migrations: {
     up: async ({ effects }) => {},
