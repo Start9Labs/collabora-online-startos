@@ -49,11 +49,11 @@ Configuration reaches `coolwsd` through environment variables, which its `--use-
 
 ## Volume and Data Layout
 
-None. Collabora renders documents that live in Nextcloud and keeps nothing between restarts, so the package declares no volumes and mounts nothing into the container.
+One volume, `main`, holding a single file: `proof_key`, the RSA private key `coolwsd` signs its WOPI requests with. It is mounted read-only at `/etc/coolwsd/proof_key`, owned by the image user (uid 1001) with mode 0600. Documents live in Nextcloud; nothing else is kept between restarts.
 
 ## File Models
 
-None. Every setting reaches `coolwsd` as an environment variable, derived at daemon start; nothing is written to disk.
+`proof_key` (`startos/fileModels/proof_key.ts`), a PEM string. Every setting reaches `coolwsd` as an environment variable, derived at daemon start.
 
 ## Dependencies
 
@@ -77,6 +77,8 @@ Collabora fetches and saves documents over the host bridge, so Nextcloud has to 
 
 There is nothing to configure. Collabora starts as soon as it is installed and needs no address, no certificate and no pairing step of its own.
 
+Init generates the WOPI proof key (RSA 2048, PKCS#1 PEM) the first time it finds none, on install or on update from a release that had none, and never replaces it afterwards. Collabora publishes the public half in its discovery document and signs every request to Nextcloud with it. Nextcloud's Office app re-fetches discovery when the signatures appear, and rejects any request whose proof does not verify.
+
 The Nextcloud Office (Collabora) app is installed by the **Nextcloud** package when a user selects this service as their office suite, and Nextcloud points itself at this one. Nothing on this side participates.
 
 ## Actions
@@ -99,7 +101,7 @@ A failure that survives the grace period can indicate a forkit failure, lack of 
 
 ## Backups and Restore
 
-Nothing is backed up, because nothing is stored. `createBackup` is declared over an empty volume set. Documents belong to Nextcloud and are captured by Nextcloud's backup; a restored server needs nothing re-entered here.
+The `main` volume is backed up, which carries the proof key. Documents belong to Nextcloud and are captured by Nextcloud's backup; a restored server needs nothing re-entered here.
 
 ## Limitations and Differences
 
@@ -118,8 +120,9 @@ package_id: collabora-online
 image: collabora/code
 architectures: [x86_64, aarch64]
 subcontainers: [cool]
-volumes: {}
-file_models: []
+volumes:
+  main: proof_key # WOPI proof key, mounted at /etc/coolwsd/proof_key
+file_models: [proof_key]
 startos_managed_env_vars:
   - aliasgroup1
   - extra_params

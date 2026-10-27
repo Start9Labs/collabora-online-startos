@@ -51,7 +51,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
     subcontainer: sdk.SubContainer.of(
       effects,
       { imageId: 'collabora' },
-      sdk.Mounts.of(),
+      sdk.Mounts.of().mountVolume({
+        volumeId: 'main',
+        subpath: 'proof_key',
+        mountpoint: '/etc/coolwsd/proof_key',
+        readonly: true,
+        type: 'file',
+      }),
       'cool',
     ),
     exec: { command: sdk.useEntrypoint(), env },

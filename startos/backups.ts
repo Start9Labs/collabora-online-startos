@@ -1,7 +1,6 @@
 import { sdk } from './sdk'
 
-// Nothing to back up: Collabora renders documents that live in Nextcloud and
-// keeps no state of its own between restarts.
+// Only the WOPI proof key: documents live in Nextcloud.
 export const { createBackup, restoreInit } = sdk.setupBackups(async () =>
-  sdk.Backups.ofVolumes(),
+  sdk.Backups.ofVolumes('main'),
 )
